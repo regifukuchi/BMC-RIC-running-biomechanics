@@ -1,0 +1,11 @@
+tnorma-0.0.3.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
+tnorma-0.0.3.dist-info/LICENSE,sha256=IZr-kLHbeSLWrI5W8zhb4igc4I-J749LeFA1YoD4Xb0,1069
+tnorma-0.0.3.dist-info/METADATA,sha256=nMb2JGLtMgKLkombkE54JuX3GneSHQwpEv8AHUqZIMo,3450
+tnorma-0.0.3.dist-info/RECORD,,
+tnorma-0.0.3.dist-info/REQUESTED,sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU,0
+tnorma-0.0.3.dist-info/WHEEL,sha256=g4nMs7d-Xl9-xC9XovUrsDHGXt-FT0E17Yqo92DEfvY,92
+tnorma-0.0.3.dist-info/top_level.txt,sha256=EQZnXvJnr7_hKcaKnWr8DGdKZqMrZXvNTzf7WkjpIi4,7
+tnorma/__init__.py,sha256=Z6ov4J48QDhAD2ASOE7QErw6wYEfYLmYRPB4fR0W5k0,50
+tnorma/__pycache__/__init__.cpython-38.pyc,,
+tnorma/__pycache__/tnorma.cpython-38.pyc,,
+tnorma/tnorma.py,sha256=TnFHH8t5zpQkRdrbNmZqs0qkyNygW-BXauNVTVTkXpA,9988
