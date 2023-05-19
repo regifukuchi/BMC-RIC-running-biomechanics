@@ -14,11 +14,23 @@ fn_json=r"C:\Users\Reginaldo\OneDrive - University of Calgary\data\Figshare_SciD
 with open(fn_json, 'r') as f:
     data_RIC = json.load(f)
     
-fname_out_S = os.path.join(pathname, 'RIC_static.csv') # static trial
-fname_out_R = os.path.join(pathname, 'RIC_run.csv') # running trial
-#%% Create pandas df with the imported files
-df_S = pd.read_csv(fname_out_S, delimiter=',', usecols=range(1,115))
-df_R = pd.read_csv(fname_out_R, delimiter=',', usecols=range(1,85))
+#%% Create dataframe column corresponding to the dataset
+neutral_lbls = list(data_RIC['neutral'].keys())
+xyz = list('XYZ')*len(neutral_lbls)
+neutral_lbls = [ele for ele in neutral_lbls for i in range(3)]
+neutral_lbls = [neutral_lbls[i]+'_'+xyz[i] for i in range(len(xyz))]
+
+# Joint marker labels static trial
+joints_lbls = list(data_RIC['joints'].keys())
+xyz = list('XYZ')*len(joints_lbls)
+joints_lbls = [ele for ele in joints_lbls for i in range(3)]
+joints_lbls = [joints_lbls[i]+'_'+xyz[i] for i in range(len(xyz))]
+
+# Marker labels running trial
+gait_lbls = list(data_RIC['running'].keys())
+xyz = list('XYZ')*len(gait_lbls)
+gait_lbls = [ele for ele in gait_lbls for i in range(3)]
+gait_lbls = [gait_lbls[i]+'_'+xyz[i] for i in range(len(xyz))]
 #%% # LEFT SIDE
 # Determine functional measures and gait type (walk vs run) movement speed comes 
 # from the A/P position time history of a heel marker so we first need to identify 

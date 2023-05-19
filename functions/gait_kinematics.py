@@ -288,11 +288,15 @@ def gait_kinematics(joints,neutral,gait,hz):
     
     # % prealocating the size of these matricies that collect data in the loop
     # % to increase speed
-    R_R_foot=R_R_shank=R_R_thigh=R_R_pelvis=np.zeros(shape=(4,4, R_foot_1_R.shape[0]))
+    R_R_foot  = np.zeros(shape=(4,4, R_foot_1_R.shape[0]))
+    R_R_shank = np.zeros(shape=(4,4, R_foot_1_R.shape[0]))
+    R_R_thigh = np.zeros(shape=(4,4, R_foot_1_R.shape[0]))
+    R_R_pelvis= np.zeros(shape=(4,4, R_foot_1_R.shape[0]))
     
     #pre-allaocate angles
-    R_R_ankle=R_R_knee=R_R_hip=np.zeros(shape=(4,4, R_foot_1_R.shape[0]))
-    
+    R_R_ankle=np.zeros(shape=(4,4, R_foot_1_R.shape[0]))
+    R_R_knee=np.zeros(shape=(4,4, R_foot_1_R.shape[0]))
+    R_R_hip=np.zeros(shape=(4,4, R_foot_1_R.shape[0]))
     # %% need to create matricies from the DYNAMIC data that has the same markers
     # % as the " ac.L_foot " in the same order ... matricies for use with soderqvist
     dR_foot = np.array([R_foot_1_R.T, R_foot_2_R.T, R_foot_3_R.T, R_foot_4_R.T], ndmin=3)
@@ -328,10 +332,14 @@ def gait_kinematics(joints,neutral,gait,hz):
     #                           dif_dR_foot.shape[2], axis=2)
     
     # Preallocate angles
-    angle_R_ankle = np.empty(shape=(dif_dR_foot.shape[2], 3)) * np.NaN
-    angle_R_knee  = np.empty(shape=(dif_dR_foot.shape[2], 3)) * np.NaN
-    angle_R_hip  = np.empty(shape=(dif_dR_foot.shape[2], 3)) * np.NaN
-    
+    # angle_R_ankle = np.empty(shape=(dif_dR_foot.shape[2], 3)) * np.NaN
+    # angle_R_knee  = np.empty(shape=(dif_dR_foot.shape[2], 3)) * np.NaN
+    # angle_R_hip  = np.empty(shape=(dif_dR_foot.shape[2], 3)) * np.NaN
+    R_R_ankle = np.empty(shape=(4,4,dif_dR_foot.shape[2])) * np.NaN
+    R_R_knee  = np.empty(shape=(4,4,dif_dR_foot.shape[2])) * np.NaN
+    R_R_hip   = np.empty(shape=(4,4,dif_dR_foot.shape[2])) * np.NaN
+    angle_R_foot = np.empty(shape=(dif_dR_foot.shape[2], 3)) * np.NaN
+    angle_Pelvis = np.empty(shape=(dif_dR_foot.shape[2], 3)) * np.NaN
     for i in range(dif_dR_foot.shape[2]):
         CR_foot = np.dot(dif_dR_foot[:,:,i], dif_ac_R_foot.T)
         CR_shank= np.dot(dif_dR_shank[:,:,i], dif_ac_R_shank.T)
@@ -419,14 +427,19 @@ def gait_kinematics(joints,neutral,gait,hz):
         #     %   from a posterior view, 'vertical vector' in the first quadrant is
         #     %   postitive and second quadrant is negative
         #     %   . ie. inversion is positive and eversion is negative for the RIGHT
-        angle_R_foot = np.empty(3)
-        angle_R_foot[0] = np.arctan(RR_R_foot[0,1]/np.sqrt(RR_R_foot[1,1]**2 + RR_R_foot[2,1]**2))
-    
+        
+        angle_R_foot[i,0] = np.arctan(RR_R_foot[0,1]/np.sqrt(RR_R_foot[1,1]**2 + RR_R_foot[2,1]**2))
         # angle of the long axis of the foot about the vertical axis
-        angle_R_foot[1] = np.arctan(RR_R_foot[0,0]/np.sqrt(RR_R_foot[1,0]**2 + RR_R_foot[2,0]**2))
-    
+        angle_R_foot[i,1] = np.arctan(RR_R_foot[0,0]/np.sqrt(RR_R_foot[1,0]**2 + RR_R_foot[2,0]**2))
         # and project the long axis into the sagital plane for ID of FOREFOOT
-        angle_R_foot[2] = np.arctan2(RR_R_foot[1,0], -R_R_foot[2,0])
+        angle_R_foot[i,2] = np.arctan2(RR_R_foot[1,0], -R_R_foot[2,0])
+        
+        # % PELVIS
+        # % project lateral axis of pelvis
+        angle_Pelvis[i,0] = np.arctan2(RR_Pelvis[0,2],RR_Pelvis[2,2]) - np.pi/2 #into floor plane
+        angle_Pelvis[i,1] = np.arctan(RR_Pelvis[1,2]/RR_Pelvis[0,2]) #into frontal plane
+        #% and project anterior axis of pelvis
+        angle_Pelvis[i,2] = np.arctan2(RR_Pelvis[1,0],-RR_Pelvis[2,0])#into sagital plane
     
         # %% calculate joint angles
         # % need rotation matrix from shank to foot ...
@@ -434,5 +447,16 @@ def gait_kinematics(joints,neutral,gait,hz):
         R_R_ankle[:,:,i] = np.dot(RR_R_shank.T, RR_R_foot)
         R_R_knee[:,:,i] = np.dot(RR_R_thigh.T, RR_R_shank)
         R_R_hip[:,:,i] = np.dot(RR_Pelvis.T, RR_R_thigh)
+        
+        #np.set_printoptions(suppress=True)
     
-    return R_R_ankle, R_R_knee, R_R_hip
+    
+        # % CARDANANGLES uses this rotation matrix to calculate angles
+        #     %   | CzCy-SzSySx  SzCy+CzSySx  -SyCx |
+        #     %   | -SzCx        CzCx         Sx    |
+        #     %   | CzSy+SzCySx  SzSy-CzCySx  CyCx  |
+        # angle_R_ankle[i,:] = cardanangles(R_R_ankle)
+        # angle_R_knee[i,:] = cardanangles(R_R_knee)
+        # angle_R_hip[i,:] = cardanangles(R_R_hip)
+    
+    return R_R_ankle, R_R_knee, R_R_hip, angle_R_foot, angle_Pelvis
