@@ -90,10 +90,62 @@ def pca_td(angles, hz, event_data, gait_mode):
         
         angles.values = temp
         
+    #%% Left Side Touchdown Detections
+
+    #% Flip the foot in sagittal and differentiate
+    negsig = -np.diff(angles['L_foot_Z'].values, 2)
+    
+    # Find negative peaks... this is much more reliable than finding positive
+    # peaks which is what we need
+    locs = detect_peaks(negsig, mpd=minpkdist, 
+                        mph=negminpkht, show=False)
+    
+    # Create a logical index of search windows to find positive peaks
+    loginds = np.zeros(negsig.shape[0])
+    for i in range(locs.shape[0]):
+        loginds[locs[i]:locs[i]+srchlgth] = 1
+        
+    loginds = loginds[:negsig.shape[0]]
+    
+    #Floor unwanted signal parts to zero to more easily find positive peaks
+    possig = -negsig * loginds
+    
+    #Detect desired positive peaks
+    locs = detect_peaks(possig, mpd=minpkdist, 
+                        mph=posminpkht, show=False)
+    
+    #Create acceleration signals for all segments and joints
+    foot = np.diff(angles['L_foot_Z'].values, 2)
+    ank  = np.diff(angles['L_ankle_Z'].values, 2)
+    knee = np.diff(angles['L_knee_Z'].values, 2)
+    hip  = np.diff(angles['L_hip_Z'].values, 2)
+    
+    signal_ = np.zeros(shape=(locs.shape[0],chnklgth*8+4))
+    
+    # Fill the signal matrix so that the PCA coefficients can be applied
+    for j in list(range(1,locs.shape[0]-1)):#% Skip first and last peaks since we might not have enough data
+        # Build signal using +/- 35 frames of data from each joint
+        signal_[j,:] = np.hstack((foot[locs[j]-chnklgth:locs[j]+chnklgth+1],
+               ank[locs[j]-chnklgth:locs[j]+chnklgth+1],
+               knee[locs[j]-chnklgth:locs[j]+chnklgth+1],
+               hip[locs[j]-chnklgth:locs[j]+chnklgth+1]))
+    
+    #Multiply the signal by the 'pre-trained' PCA coefficients
+    projected = np.dot(signal_,coeffL)
+    
+    # Apply the linear polynomial to predict the frame difference
+    pred = np.polyval(pL, projected[:,1])
+    
+    # Apply frame difference to the foot accel peak timing
+    evtL = pred+locs+np.repeat(bias, pred.shape[0])
+    
+    # Original prediction equation is for 200Hz
+    evtL = evtL * (hz/defaultHz)
+    
     #%% Right Side Touchdown Detections
     
     #% Flip the foot in sagittal and differentiate
-    negsig = -np.diff(angles['foot_Z'].values, 2)
+    negsig = -np.diff(angles['R_foot_Z'].values, 2)
     
     # Find peaks location. Signal flipped because of X-axis convention difference.
     locs = detect_peaks(negsig, mpd=minpkdist, 
@@ -115,10 +167,10 @@ def pca_td(angles, hz, event_data, gait_mode):
                         mph=posminpkht, show=False)
     
     #Create acceleration signals for all segments and joints
-    foot = np.diff(angles['foot_Z'].values, 2)
-    ank  = np.diff(angles['ankle_Z'].values, 2)
-    knee = np.diff(angles['knee_Z'].values, 2)
-    hip  = np.diff(angles['hip_Z'].values, 2)
+    foot = np.diff(angles['R_foot_Z'].values, 2)
+    ank  = np.diff(angles['R_ankle_Z'].values, 2)
+    knee = np.diff(angles['R_knee_Z'].values, 2)
+    hip  = np.diff(angles['R_hip_Z'].values, 2)
     
     signal_ = np.zeros(shape=(locs.shape[0],chnklgth*8+4))
     
@@ -143,6 +195,7 @@ def pca_td(angles, hz, event_data, gait_mode):
     
     # Remove first and last events since these are not properly calculated due
     # to lack of data
+    evtL = np.delete(evtL, (0,-1))
     evtR = np.delete(evtR, (0,-1))
     
-    return evtR
+    return evtL, evtR

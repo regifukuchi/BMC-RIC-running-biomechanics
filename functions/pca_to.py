@@ -82,18 +82,54 @@ def pca_to(angles, hz, event_data, gait_mode):
         
         angles.values = temp
         
-    # %% Right Side Toeoff Detections
-    sig = -angles['foot_Z'].values
+    # %% Left Side Toeoff Detections
+
+    # Flip the foot in sagittal 
+    sig = -angles['L_foot_Z'].values
     
     # Detect desired positive peaks
     locs = detect_peaks(sig, mpd=minpkdist, 
                         mph=posminpkht, show=False)
     
     #Create acceleration signals for all segments and joints
-    foot = np.diff(angles['foot_Z'].values, 2)
-    ank  = np.diff(angles['ankle_Z'].values, 2)
-    knee = np.diff(angles['knee_Z'].values, 2)
-    hip  = np.diff(angles['hip_Z'].values, 2)
+    foot = np.diff(angles['L_foot_Z'].values, 2)
+    ank  = np.diff(angles['L_ankle_Z'].values, 2)
+    knee = np.diff(angles['L_knee_Z'].values, 2)
+    hip  = np.diff(angles['L_hip_Z'].values, 2)
+    
+    signal_ = np.zeros(shape=(locs.shape[0],chnklgth*8+4))
+    # Fill the signal matrix so that the PCA coefficients can be applied
+    for j in list(range(1,locs.shape[0]-1)):#% Skip first and last peaks since we might not have enough data
+        # Build signal using - 70 frames of data from each joint
+        signal_[j,:] = np.hstack((foot[locs[j]-chnklgth*2:locs[j]+1],
+               ank[locs[j]-chnklgth*2:locs[j]+1],
+               knee[locs[j]-chnklgth*2:locs[j]+1],
+               hip[locs[j]-chnklgth*2:locs[j]+1]))
+        
+    #Multiply the signal by the 'pre-trained' PCA coefficients
+    projected = np.dot(signal_,coeffL)
+    
+    # Apply the linear polynomial to predict the frame difference
+    pred = np.polyval(pL, projected[:,2])
+    
+    # Apply frame difference to the foot accel peak timing
+    evtL = -pred+locs+np.repeat(bias, pred.shape[0])
+    
+    # Original prediction equation is for 200Hz
+    evtL = evtL * (hz/defaultHz)
+    
+    # %% Right Side Toeoff Detections
+    sig = -angles['R_foot_Z'].values
+    
+    # Detect desired positive peaks
+    locs = detect_peaks(sig, mpd=minpkdist, 
+                        mph=posminpkht, show=False)
+    
+    #Create acceleration signals for all segments and joints
+    foot = np.diff(angles['R_foot_Z'].values, 2)
+    ank  = np.diff(angles['R_ankle_Z'].values, 2)
+    knee = np.diff(angles['R_knee_Z'].values, 2)
+    hip  = np.diff(angles['R_hip_Z'].values, 2)
     
     signal_ = np.zeros(shape=(locs.shape[0],chnklgth*8+4))
     
@@ -119,6 +155,7 @@ def pca_to(angles, hz, event_data, gait_mode):
     
     # Remove first and last events since these are not properly calculated due
     # to lack of data
+    evtL = np.delete(evtL, (0,-1))
     evtR = np.delete(evtR, (0,-1))
     
-    return evtR
+    return evtL, evtR
