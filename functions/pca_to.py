@@ -6,6 +6,7 @@ __license__ = "MIT"
 
 import sys
 import numpy as np
+import pandas as pd
 from scipy import signal
 from detecta import detect_peaks
 
@@ -80,7 +81,8 @@ def pca_to(angles, hz, event_data, gait_mode):
         temp = angles.values
         temp = signal.resample_poly(temp, defaultHz, hz)
         
-        angles.values = temp
+        # Update pandas DF with resampled data
+        angles = pd.DataFrame(data=temp, columns=angles.columns)
         
     # %% Left Side Toeoff Detections
 

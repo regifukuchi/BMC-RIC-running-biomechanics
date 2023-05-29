@@ -282,7 +282,7 @@ def gait_steps(neutral, gait, angles, hz):
         try:
             if i > np.max(minx):
                 break
-            elif np.isin(i,minx) and mindist[minx==i] < maxadj:
+            elif np.isin(i,minx) and (mindist[minx==i] < maxadj).any():
                 #Replace with evtLtd since its more accurate
                 L_TD[i] = evtLtd[minx==i]
                 evFltd[i] = 1
@@ -322,7 +322,7 @@ def gait_steps(neutral, gait, angles, hz):
         try:
             if i > np.max(minx):
                 break
-            elif np.isin(i,minx) and mindist[minx==i] < maxadj:
+            elif np.isin(i,minx) and (mindist[minx==i] < maxadj).any():
                 #Replace with evtLto since its more accurate
                 L_TO[i] = evtLto[minx==i]
                 evFlto[i] = 1
@@ -434,7 +434,7 @@ def gait_steps(neutral, gait, angles, hz):
         try:
             if i > np.max(minx):
                 break
-            elif np.isin(i,minx) and mindist[minx==i] < maxadj:
+            elif np.isin(i,minx) and (mindist[minx==i] < maxadj).any():
                 #Replace with evtRtd since its more accurate
                 R_TD[i] = evtRtd[minx==i]
                 evFrtd[i] = 1
@@ -475,7 +475,7 @@ def gait_steps(neutral, gait, angles, hz):
         try:
             if i > np.max(minx):
                 break
-            elif np.isin(i,minx) and mindist[minx==i] < maxadj:
+            elif np.isin(i,minx) and (mindist[minx==i] < maxadj).any():
                 #Replace with evtLto since its more accurate
                 R_TO[i] = evtRto[minx==i]
                 evFrto[i] = 1
