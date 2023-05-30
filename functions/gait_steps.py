@@ -284,7 +284,7 @@ def gait_steps(neutral, gait, angles, hz):
                 break
             elif np.isin(i,minx) and (mindist[minx==i] < maxadj).any():
                 #Replace with evtLtd since its more accurate
-                L_TD[i] = evtLtd[minx==i]
+                L_TD[i] = evtLtd[minx==i][0]
                 evFltd[i] = 1
             else:
                 #Use FFi since it is more robust
@@ -324,7 +324,7 @@ def gait_steps(neutral, gait, angles, hz):
                 break
             elif np.isin(i,minx) and (mindist[minx==i] < maxadj).any():
                 #Replace with evtLto since its more accurate
-                L_TO[i] = evtLto[minx==i]
+                L_TO[i] = evtLto[minx==i][0]
                 evFlto[i] = 1
             else:
                 #Use FFi since it is more robust
@@ -436,7 +436,7 @@ def gait_steps(neutral, gait, angles, hz):
                 break
             elif np.isin(i,minx) and (mindist[minx==i] < maxadj).any():
                 #Replace with evtRtd since its more accurate
-                R_TD[i] = evtRtd[minx==i]
+                R_TD[i] = evtRtd[minx==i][0]
                 evFrtd[i] = 1
             else:
                 #Use FFi since it is more robust
@@ -477,8 +477,8 @@ def gait_steps(neutral, gait, angles, hz):
                 break
             elif np.isin(i,minx) and (mindist[minx==i] < maxadj).any():
                 #Replace with evtLto since its more accurate
-                R_TO[i] = evtRto[minx==i]
-                evFrto[i] = 1
+                R_TO[i] = evtRto[minx==i][0]
+                evFrto[i] = np.float64(1)
             else:
                 #Use FFi since it is more robust
                 R_TO[i] = R_FBi[i]
@@ -630,4 +630,4 @@ def gait_steps(neutral, gait, angles, hz):
     R_TD = events[:,2]
     R_TO = events[:,3]
     
-    return L_TD, L_TO, R_TD, R_TO, label
+    return L_TD, L_TO, R_TD, R_TO, eventsflag, label
