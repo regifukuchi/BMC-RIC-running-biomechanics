@@ -16,8 +16,10 @@ import json
 from ezc3d import c3d
 import numpy as np
 import pandas as pd
+from scipy import signal
+from critic_damp import critic_damp
 
-def parse_RBDS(fn_static, fn_dynamic):
+def parse_RBDS(fn_static, fn_dynamic, filt):
     '''
     Parameters
     ----------
@@ -158,7 +160,19 @@ def parse_RBDS(fn_static, fn_dynamic):
     gait[['R_foot_4_X','R_foot_4_Y','R_foot_4_Z']] = R_foot_4
 
     # Sampling frequency
-    hz = int(c['parameters']['POINT']['RATE']['value'])
+    hz = int(c['parameters']['POINT']['RATE']['value'])    
+    
+    if filt==True: # if wants filtered signal
+        # Filter markers signal (Critically damped filter)
+        b_cd, a_cd, fc_cd = critic_damp(fcut=10, freq=hz, npass=2, fcorr=True, 
+                                        filt='critic')
+        x = gait.values # raw data
+        yf = np.empty(shape=x.shape) * np.NaN
+        for i in range(x.shape[1]):
+            yf[:,i]= signal.filtfilt(b_cd, a_cd, x[:,i])
+        
+        # Update df with filtered signal
+        gait = pd.DataFrame(data=yf, columns=gait.columns)
 
     return neutral, joints, gait, hz                      
     
