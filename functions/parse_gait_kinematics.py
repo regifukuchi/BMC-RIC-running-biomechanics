@@ -214,7 +214,8 @@ def parse_RIC(filename):
     joints = pd.DataFrame(data=joints, columns=joints_lbls)
     
     # Array with dynamic markers data
-    run_data = np.empty(shape=(5000, len(list(data_RIC['running'].keys()))*3))
+    nrows = np.array(data_RIC['running']['pelvis_1']).shape[0]
+    run_data = np.empty(shape=(nrows, len(list(data_RIC['running'].keys()))*3))
     for m, mkr in enumerate(list(data_RIC['running'].keys())):
         run_data[:, 3*m:3*(m+1)] = np.array(data_RIC['running'][mkr])
     
