@@ -2,7 +2,7 @@
 """
 
 __author__ = "Reginaldo K Fukuchi, https://github.com/regifukuchi"
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __license__ = "MIT"
 
 # Prepare environment
@@ -19,7 +19,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from detecta import detect_peaks
 from pca_td import pca_td
 from pca_to import pca_to
-
+from largest_block import largest_block
 
 def gait_steps(neutral, gait, angles, hz):
     '''
@@ -234,17 +234,24 @@ def gait_steps(neutral, gait, angles, hz):
     if (L_FFi.shape[0] < 2) or (L_FBi.shape[0] < 2):
         print('Automated event detection unable to pull adequate number of strides for analysis. Please redo your data collection.')
         sys.exit()
+    
+    # Python function largest_block.py
+    L_FFi, L_FBi, L_block_start, L_block_end = largest_block(L_FFi, L_FBi)
+    
+    if False: # enable if one wants to run Matlab engine API
+        # Call Matlab function LARGEST_BLOCK.m from Python
+        eng = matlab.engine.start_matlab() # start Matlab engine
+        eng.cd(r'../functions', nargout=0) # set path for functions dir
         
-    # Call Matlab function LARGEST_BLOCK.m from Python
-    eng = matlab.engine.start_matlab() # start Matlab engine
-    eng.cd(r'../functions', nargout=0) # set path for functions dir
+        
+        L_FFi, L_FBi, L_block_start, block_end = eng.largest_block(matlab.double(list(L_FFi)), 
+                                                                     matlab.double(list(L_FBi)), nargout=4)
+        
+        L_FFi = np.array(L_FFi).flatten().astype(int)
+        L_FBi = np.array(L_FBi).flatten().astype(int)
+        
     
     
-    L_FFi, L_FBi, L_block_start, block_end = eng.largest_block(matlab.double(list(L_FFi)), 
-                                                                 matlab.double(list(L_FBi)), nargout=4)
-    
-    L_FFi = np.array(L_FFi).flatten().astype(int)
-    L_FBi = np.array(L_FBi).flatten().astype(int)
     
     if (L_FFi.shape[0] < 2) or (L_FBi.shape[0] < 2):
         print('Automated event detection unable to pull adequate number of strides for analysis. Please redo your data collection.')
@@ -385,11 +392,15 @@ def gait_steps(neutral, gait, angles, hz):
         
         
     # LARGEST_BLOCK
-    R_FFi, R_FBi, R_block_start, R_block_end = eng.largest_block(matlab.double(list(R_FFi)), 
-                                                                 matlab.double(list(R_FBi)), nargout=4)
+    # Python function largest_block.py
+    R_FFi, R_FBi, R_block_start, R_block_end = largest_block(R_FFi, R_FBi)
     
-    R_FFi = np.array(R_FFi).flatten().astype(int)
-    R_FBi = np.array(R_FBi).flatten().astype(int)
+    if False:# enable if one wants to run Matlab engine API
+        R_FFi, R_FBi, R_block_start, R_block_end = eng.largest_block(matlab.double(list(R_FFi)), 
+                                                                     matlab.double(list(R_FBi)), nargout=4)
+        
+        R_FFi = np.array(R_FFi).flatten().astype(int)
+        R_FBi = np.array(R_FBi).flatten().astype(int)
     
     if (R_FFi.shape[0] < 2) or (R_FBi.shape[0] < 2):
         print('Automated event detection unable to pull adequate number of strides for analysis. Please redo your data collection.')
