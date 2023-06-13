@@ -1,2 +1,2 @@
 # UFABC_UofC_datasets
- Merge RBDS UFABC and RCT Calgary datasets
+ Compare matching sujects of the RBDS and RIC datasets
