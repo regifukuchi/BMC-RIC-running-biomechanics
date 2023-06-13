@@ -1,4 +1,4 @@
-function [ FFi_mod, FBi_mod, block_start, block_end ] = largest_block( FFi, FBi)
+%function [ FFi_mod, FBi_mod, block_start, block_end ] = largest_block( FFi, FBi)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function LARGEST_BLOCK loads in  the foot forward/foot back indices 
@@ -28,6 +28,13 @@ function [ FFi_mod, FBi_mod, block_start, block_end ] = largest_block( FFi, FBi)
 
 % Copyright (C) 2016-2023 Allan Brett and The Running Injury Clinic
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% INPUTS
+FFi = [119, 249, 379, 511, 641, 771, 902, 1031, 1162, 1292, 1422, 1553, 1683,... 
+       1812, 1943, 2075, 2205, 2336, 2466, 2597, 2729, 2859, 2990, 3120, 3249,... 
+       3379, 3510, 3640, 3770, 3901, 4031, 4162, 4291, 4420, 4549, 4680, 4809, 4938];
+FBi = [185, 314, 436, 577, 707, 837, 967, 1097, 1229, 1358, 1489, 1619, 1745,... 
+       1877, 2009, 2142, 2263, 2401, 2523, 2664, 2794, 2925, 3056, 3186, 3314,... 
+       3445, 3574, 3705, 3836, 3966, 4096, 4226, 4356, 4485, 4616, 4746, 4873];
 %%
 % Combine and sort the FF and FB
 allsort = [FFi(:) zeros(length(FFi),1); FBi(:) ones(length(FBi),1)];
@@ -41,14 +48,14 @@ end
 
 allsort_bak = allsort;
 
-% Confirm alternating status and remove trailing chunks that aren't
+%% Confirm alternating status and remove trailing chunks that aren't
 % ordered
 
 i=0;
 skip = 0;
 longest_length =0;
 
-%series of while loops will search for longest continuous chunk of data
+%% series of while loops will search for longest continuous chunk of data
 %first while loop adds up the length of a continuous segments adding in the
 %indicies that are skipped (because they contain the dicontinuity)
 while (sum(longest_length)+skip < size(allsort_bak,1)) && size(allsort,1)>1
@@ -95,7 +102,7 @@ while (sum(longest_length)+skip < size(allsort_bak,1)) && size(allsort,1)>1
         end
     end
     
-    %for the special case where there are two discontinuities of 0s in a row
+    % for the special case where there are two discontinuities of 0s in a row
     if k == 2 && allsort(1,2) == 0
         allsort(1:2,:) = [];
         longest_length(i,1) = 0;
@@ -150,7 +157,7 @@ while (sum(longest_length)+skip < size(allsort_bak,1)) && size(allsort,1)>1
     
 end
 
-%determine which index has the largest continuous block
+%% determine which index has the largest continuous block
 [~,longest_index]  = max(diff(index));
 
 %reorder allsort to contain only this block
@@ -165,5 +172,3 @@ FBi_mod = allsort(allsort(:,2) == 1,1);
 %and ends
 block_start = FFi_mod(1,1);
 block_end = FBi_mod(end,1);
-
-end
