@@ -5,3 +5,5 @@ seaborn
 pandas
 pingouin
 spm1d
+ipympl
+tqdm
