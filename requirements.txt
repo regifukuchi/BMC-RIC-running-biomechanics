@@ -5,3 +5,4 @@ seaborn
 pandas
 pingouin
 spm1d
+jupyterlab
